@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gelişmiş Müşteri Dashboard - Gece/Gündüz Tema Toggle</title>
+
+  <!-- Google Fonts - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* --------- Temel ve Tema Renkleri --------- */
+    :root {
+      --bg-light: #f8f8f8;
+      --card-light: #fff;
+      --text-light: #1f2937;
+      --text-muted-light: #6b7280;
+      --primary-light: #7b6ef6;
+      --primary-light-soft: #9c94ff;
+      --danger-light: #ef4444;
+      --warning-light: #facc15;
+      --success-light: #22c55e;
+
+      --bg-dark: #121217;
+      --card-dark: #1d1f29;
+      --text-dark: #e4e4e4;
+      --text-muted-dark: #999999;
+      --primary-dark: #7b6ef6;
+      --primary-dark-soft: #5d57ab;
+      --danger-dark: #ef5757;
+      --warning-dark: #fbcf46;
+      --success-dark: #5acf70;
+
+      --shadow-light: 0 8px 16px rgba(0, 0, 0, 0.1);
+      --shadow-dark: 0 12px 28px rgba(107, 110, 246, 0.6);
+
+      --border-radius: 22px;
+
+      /* Temalar için varsayılan varlar */
+      --bg: var(--bg-light);
+      --card-bg: var(--card-light);
+      --text-primary: var(--text-light);
+      --text-muted: var(--text-muted-light);
+      --primary: var(--primary-light);
+      --primary-soft: var(--primary-light-soft);
+      --danger: var(--danger-light);
+      --warning: var(--warning-light);
+      --success: var(--success-light);
+      --shadow-soft: var(--shadow-light);
+    }
+
+    body.dark {
+      --bg: var(--bg-dark);
+      --card-bg: var(--card-dark);
+      --text-primary: var(--text-dark);
+      --text-muted: var(--text-muted-dark);
+      --primary: var(--primary-dark);
+      --primary-soft: var(--primary-dark-soft);
+      --danger: var(--danger-dark);
+      --warning: var(--warning-dark);
+      --success: var(--success-dark);
+      --shadow-soft: var(--shadow-dark);
+      background-color: var(--bg);
+      color: var(--text-primary);
+    }
+
+    /* ----------- Genel Ayarlar ----------- */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: "Inter", sans-serif;
+      padding: 32px 24px;
+      min-height: 100vh;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      user-select: none;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--primary);
+      user-select: none;
+      text-shadow: 0 0 14px var(--primary-soft);
+      margin: 0;
+    }
+
+    /* Actions alanı düzeni */
+    .actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Arama ikonu */
+    .actions .search-icon {
+      position: absolute;
+      left: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 18px;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    /* Arama input */
+    .actions input.search-with-icon {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border: none;
+      padding: 14px 22px 14px 48px; /* iç sağdan, soldan ikon için boşluk */
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-soft);
+      font-size: 15px;
+      transition: box-shadow 0.3s ease, background-color 0.3s ease;
+      outline-offset: 3px;
+      min-width: 220px;
+      max-width: 100%;
+    }
+
+    .actions input.search-with-icon:focus {
+      box-shadow: 0 0 14px var(--primary-soft);
+      background-color: var(--bg);
+      outline: none;
+    }
+
+    /* Select dropdown */
+    .actions select {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border: none;
+      padding: 14px 22px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-soft);
+      font-size: 15px;
+      outline-offset: 3px;
+      min-width: 180px;
+      max-width: 100%;
+      cursor: pointer;
+      transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+
+    .actions select:focus {
+      box-shadow: 0 0 14px var(--primary-soft);
+      background-color: var(--bg);
+      outline: none;
+    }
+
+    /* Buton */
+    button.btn {
+      background-color: var(--primary);
+      color: var(--card-bg);
+      font-weight: 700;
+      padding: 14px 30px;
+      border-radius: var(--border-radius);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(123, 110, 246, 0.7);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    button.btn:hover,
+    button.btn:focus {
+      background-color: var(--primary-soft);
+      box-shadow: 0 10px 34px rgba(159, 153, 255, 0.9);
+      outline: none;
+    }
+
+    /* KPI GRID */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 28px;
+    }
+
+    .kpi-card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 32px 28px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: box-shadow 0.3s ease, background-color 0.4s ease, color 0.4s ease;
+      text-align: center;
+    }
+
+    .kpi-card:hover {
+      box-shadow: 0 24px 48px var(--primary-soft);
+    }
+
+    .kpi-key {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 1.3px;
+      user-select: none;
+    }
+
+    .kpi-value {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      letter-spacing: 0.03em;
+    }
+
+    /* Risk renkleri */
+    .risk-low {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .risk-mid {
+      color: var(--warning);
+      font-weight: 700;
+    }
+
+    .risk-high {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    /* ROW - toplam borç & gecikme */
+    .kpi-row {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .kpi-half {
+      flex: 1;
+      text-align: center;
+    }
+
+    /* MAIN GRID */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 42px;
+      min-height: 600px;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 38px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 34px 32px;
+      box-shadow: var(--shadow-soft);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      transition: box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 24px 52px var(--primary-soft);
+    }
+
+    .card h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      user-select: none;
+      color: var(--primary);
+      text-shadow: 0 0 6px var(--primary-soft);
+    }
+
+    ul.risk-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      border-radius: 20px;
+    }
+
+    ul.risk-list li {
+      background-color: var(--primary-soft);
+      padding: 18px 24px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0 8px 26px rgba(123, 110, 246, 0.45);
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+
+    ul.risk-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    ul.risk-list li .risk-tag {
+      padding: 8px 22px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      user-select: none;
+      white-space: nowrap;
+      border-radius: 9999px;
+      font-weight: 700;
+      background-color: var(--danger);
+      color: #fff;
+    }
+
+    ul.risk-list li .risk-tag.low {
+      background-color: var(--success);
+      color: #0d2a17;
+    }
+
+    ul.risk-list li .risk-tag.medium {
+      background-color: var(--warning);
+      color: #3f2f00;
+    }
+
+    ul.risk-list li .risk-tag.high {
+      background-color: var(--danger);
+      color: #540f0f;
+    }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 28px 32px;
+      box-shadow: var(--shadow-soft);
+      color: var(--text-primary);
+      overflow-x: auto;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .right-panel:hover {
+      box-shadow: 0 18px 50px var(--primary-soft);
+    }
+
+    .right-panel h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 28px;
+      user-select: none;
+      color: var(--primary);
+      text-shadow: 0 0 6px var(--primary-soft);
+    }
+
+    /* Tablo */
+    table {
+      border-collapse: separate;
+      border-spacing: 0 20px;
+      width: 100%;
+      min-width: 980px;
+      font-size: 15px;
+      user-select: none;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      padding: 16px 14px;
+      background-color: var(--primary-soft);
+      color: #fff;
+      border-radius: 20px 20px 0 0;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-align: left;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    tbody tr {
+      background-color: var(--primary-light);
+      border-radius: 20px;
+      box-shadow: 0 8px 26px rgba(123, 110, 246, 0.5);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+    }
+
+    tbody tr:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 54px rgba(123, 110, 246, 0.7);
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    tbody td {
+      padding: 16px 14px;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+    }
+
+    /* Kolon genişlikleri */
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 42px;
+      min-width: 38px;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: 140px;
+      min-width: 130px;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 120px;
+      min-width: 110px;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(5),
+    td:nth-child(5),
+    th:nth-child(6),
+    td:nth-child(6),
+    th:nth-child(7),
+    td:nth-child(7) {
+      width: 90px;
+      min-width: 85px;
+    }
+
+    th:nth-child(8),
+    td:nth-child(8),
+    th:nth-child(9),
+    td:nth-child(9),
+    th:nth-child(10),
+    td:nth-child(10) {
+      width: 110px;
+      min-width: 105px;
+    }
+
+    /* Risk renkleri */
+    tbody .risk-low {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    tbody .risk-mid {
+      color: var(--warning);
+      font-weight: 700;
+    }
+
+    tbody .risk-high {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    /* İşlem butonları */
+    .actions-buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .actions-buttons button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 6px;
+      border-radius: 14px;
+      color: var(--primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+
+    .actions-buttons button:hover,
+    .actions-buttons button:focus {
+      background-color: var(--primary-soft);
+      outline: none;
+    }
+
+    .actions-buttons button.delete {
+      color: var(--danger);
+    }
+
+    .actions-buttons button.delete:hover,
+    .actions-buttons button.delete:focus {
+      background-color: #f7797925;
+      color: var(--danger);
+      outline: none;
+    }
+
+    /* Grafik */
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 12000;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 38px 40px;
+      max-width: 600px;
+      width: 95%;
+      box-shadow: 0 30px 54px rgba(123, 110, 246, 0.7);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      position: relative;
+    }
+
+    .modal h3 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      text-shadow: 0 0 8px var(--primary-soft);
+      user-select: none;
+    }
+
+    .modal .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: transparent;
+      border: none;
+      font-size: 30px;
+      cursor: pointer;
+      color: var(--primary-soft);
+      font-weight: 900;
+      line-height: 1;
+      transition: color 0.3s ease;
+      user-select: none;
+    }
+
+    .modal .close-btn:hover,
+    .modal .close-btn:focus {
+      color: var(--primary);
+      outline: none;
+    }
+
+    form label {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      user-select: none;
+    }
+
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="date"] {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 16px;
+      border-radius: 24px;
+      border: none;
+      outline-offset: 4px;
+      margin-bottom: 28px;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      box-shadow: inset 0 6px 12px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+      user-select: text;
+    }
+
+    form input[type="text"]:focus,
+    form input[type="number"]:focus,
+    form input[type="date"]:focus {
+      box-shadow: 0 0 14px var(--primary-soft);
+      outline: none;
+    }
+
+    form button[type="submit"] {
+      background-color: var(--primary);
+      padding: 18px 34px;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-primary);
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 22px 48px rgba(123, 110, 246, 0.9);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+
+    form button[type="submit"]:hover,
+    form button[type="submit"]:focus {
+      background-color: var(--primary-soft);
+      box-shadow: 0 30px 56px rgba(106, 98, 238, 0.95);
+      outline: none;
+    }
+
+    .error-message {
+      color: var(--danger);
+      font-weight: 700;
+      font-size: 15px;
+      margin-top: -20px;
+      margin-bottom: 24px;
+      display: none;
+      user-select: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .right-panel {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Tema toggle butonu -->
+  <button class="theme-toggle-btn" aria-label="Gece / Gündüz teması değiştir" title="Gece / Gündüz teması">
+    <div class="circle"></div>
+  </button>
+
+  <div class="container">
+    <header>
+      <h1>Finansal Dashboard</h1>
+      <div class="actions" role="search" style="position:relative;">
+        <span
+          class="search-icon"
+          style="
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: var(--text-muted);
+            user-select: none;
+            pointer-events: none;
+          "
+          >🔍</span
+        >
+        <input
+          type="search"
+          id="searchInput"
+          class="search-with-icon"
+          placeholder="Müşteri Adı / TC ile Ara..."
+          aria-label="Müşteri arama"
+        />
+        <select id="riskFilter" aria-label="Risk filtresi">
+          <option value="all">Tüm Riskler</option>
+          <option value="Düşük Risk">Düşük Risk</option>
+          <option value="Orta Risk">Orta Risk</option>
+          <option value="Yüksek Risk">Yüksek Risk</option>
+          <option value="Riskli">Riskli</option>
+        </select>
+        <button class="btn" id="btnAddCustomer" aria-haspopup="dialog">+ Yeni Müşteri Ekle</button>
+      </div>
+    </header>
+
+    <section class="kpi-grid" id="kpiGrid" aria-label="KPIs"></section>
+
+    <section class="main-grid" role="main">
+      <div class="left-panel">
+        <div class="card" aria-label="En riskli 5 müşteri">
+          <h3>En Riskli 5 Müşteri</h3>
+          <ul class="risk-list" id="riskliestList"></ul>
+        </div>
+
+        <div class="card" aria-label="Borç ve gelir grafiği">
+          <h3>Borç ve Gelir Grafiği</h3>
+          <canvas id="debtChart" aria-label="Borç ve gelir grafik" role="img"></canvas>
+        </div>
+      </div>
+
+      <div class="right-panel" aria-label="Müşteri Listesi">
+        <h2>Müşteri Listesi</h2>
+        <table aria-describedby="Müşteri listesi">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ad</th>
+              <th>TC Kimlik</th>
+              <th>Telefon</th>
+              <th>Gelir</th>
+              <th>Gider</th>
+              <th>Borç</th>
+              <th>Ödeme Tarihi</th>
+              <th>Gecikme (gün)</th>
+              <th>Risk</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody id="customerTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal -->
+  <div
+    class="modal-overlay"
+    id="modalOverlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+    tabindex="-1"
+    style="display: none"
+  >
+    <div class="modal">
+      <button class="close-btn" id="modalCloseBtn" aria-label="Kapat">&times;</button>
+      <h3 id="modalTitle">Yeni Müşteri Ekle</h3>
+      <form id="customerForm" novalidate>
+        <input type="hidden" id="customerId" value="" />
+        <label for="ad">Ad Soyad <sup>*</sup></label>
+        <input id="ad" name="ad" required minlength="2" maxlength="100" type="text" />
+
+        <label for="tcno">TC Kimlik No <sup>*</sup></label>
+        <input
+          id="tcno"
+          name="tcno"
+          required
+          pattern="^\\d{11}$"
+          placeholder="11 haneli rakam"
+          inputmode="numeric"
+          type="text"
+        />
+
+        <label for="telefon">Telefon</label>
+        <input id="telefon" name="telefon" maxlength="20" placeholder="Opsiyonel" type="text" />
+
+        <label for="gelir">Gelir (₺) <sup>*</sup></label>
+        <input id="gelir" name="gelir" required min="0" step="0.01" type="number" />
+
+        <label for="gider">Gider (₺) <sup>*</sup></label>
+        <input id="gider" name="gider" required min="0" step="0.01" type="number" />
+
+        <label for="borc">Borç (₺) <sup>*</sup></label>
+        <input id="borc" name="borc" required min="0" step="0.01" type="number" />
+
+        <label for="odeme_tarihi">Ödeme Tarihi <sup>*</sup></label>
+        <input id="odeme_tarihi" name="odeme_tarihi" required type="date" />
+
+        <p class="error-message" id="formError" aria-live="polite"></p>
+
+        <button type="submit" aria-label="Kaydet">Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Tema Toggle
+    const themeToggleBtn = document.querySelector(".theme-toggle-btn");
+    const body = document.body;
+    if (localStorage.getItem("theme") === "dark") {
+      body.classList.add("dark");
+    }
+    themeToggleBtn.addEventListener("click", () => {
+      body.classList.toggle("dark");
+      if (body.classList.contains("dark")) {
+        localStorage.setItem("theme", "dark");
+      } else {
+        localStorage.setItem("theme", "light");
+      }
+    });
+
+    // Elementler
+    const kpiGrid = document.getElementById("kpiGrid");
+    const customerTableBody = document.getElementById("customerTableBody");
+    const riskliestList = document.getElementById("riskliestList");
+    const debtChartCtx = document.getElementById("debtChart").getContext("2d");
+
+    const btnAddCustomer = document.getElementById("btnAddCustomer");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+    const customerForm = document.getElementById("customerForm");
+    const formError = document.getElementById("formError");
+
+    const searchInput = document.getElementById("searchInput");
+    const riskFilter = document.getElementById("riskFilter");
+
+    const customerIdInput = document.getElementById("customerId");
+    const adInput = document.getElementById("ad");
+    const tcnoInput = document.getElementById("tcno");
+    const telefonInput = document.getElementById("telefon");
+    const gelirInput = document.getElementById("gelir");
+    const giderInput = document.getElementById("gider");
+    const borcInput = document.getElementById("borc");
+    const odemeTarihiInput = document.getElementById("odeme_tarihi");
+
+    let customers = [];
+    let filteredCustomers = [];
+    let debtChart;
+
+    // Yardımcı fonksiyonlar
+    function riskClass(risk) {
+      switch (risk) {
+        case "Düşük Risk":
+          return "risk-low";
+        case "Orta Risk":
+          return "risk-mid";
+        case "Yüksek Risk":
+        case "Riskli":
+          return "risk-high";
+        default:
+          return "";
+      }
+    }
+
+    function moneyFormat(n) {
+      return n.toLocaleString("tr-TR", {
+        style: "currency",
+        currency: "TRY",
+        minimumFractionDigits: 2,
+      });
+    }
+
+    function createKPI(title, value) {
+      const card = document.createElement("div");
+      card.className = "kpi-card";
+      card.innerHTML = `<div class="kpi-key">${title}</div><div class="kpi-value">${value}</div>`;
+      return card;
+    }
+
+    // Dashboard güncelle
+    function updateDashboard() {
+      const totalCustomers = filteredCustomers.length;
+      const riskyCount = filteredCustomers.filter((c) => c.risk !== "Düşük Risk").length;
+      const totalDebt = filteredCustomers.reduce((acc, c) => acc + (c.borc || 0), 0);
+      const lateCount = filteredCustomers.filter((c) => c.gecikme_gun > 0).length;
+
+      kpiGrid.innerHTML = "";
+
+      kpiGrid.appendChild(createKPI("Toplam Müşteri", totalCustomers));
+      kpiGrid.appendChild(createKPI("Riskli Müşteriler", riskyCount));
+
+      const flexRow = document.createElement("div");
+      flexRow.classList.add("kpi-row");
+
+      const borcCard = createKPI("Toplam Borç", moneyFormat(totalDebt));
+      borcCard.classList.add("kpi-half");
+      const gecikmeCard = createKPI("Gecikmeli Ödeme", lateCount);
+      gecikmeCard.classList.add("kpi-half");
+
+      flexRow.appendChild(borcCard);
+      flexRow.appendChild(gecikmeCard);
+      kpiGrid.appendChild(flexRow);
+
+      // En riskli liste (ilk 5)
+      const riskySorted = filteredCustomers
+        .filter((c) => c.risk !== "Düşük Risk")
+        .sort((a, b) => b.gecikme_gun - a.gecikme_gun)
+        .slice(0, 5);
+
+      riskliestList.innerHTML = "";
+      if (riskySorted.length === 0) {
+        riskliestList.innerHTML = "<li>Riskli müşteri bulunamadı.</li>";
+      } else {
+        riskySorted.forEach((c) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<span>${c.ad}</span><span class="risk-tag ${riskClass(c.risk)}">${c.risk}</span>`;
+          riskliestList.appendChild(li);
+        });
+      }
+
+      // Tablo oluştur
+      customerTableBody.innerHTML = "";
+      filteredCustomers.forEach((c) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.ad}</td>
+          <td>${c.tcno || ""}</td>
+          <td>${c.telefon || ""}</td>
+          <td>${moneyFormat(c.gelir || 0)}</td>
+          <td>${moneyFormat(c.gider || 0)}</td>
+          <td>${moneyFormat(c.borc || 0)}</td>
+          <td>${c.odeme_tarihi || ""}</td>
+          <td>${c.gecikme_gun || 0}</td>
+          <td class="${riskClass(c.risk)}">${c.risk}</td>
+          <td class="actions-buttons">
+            <button aria-label="Düzenle ${c.ad}" class="edit-btn" data-id="${c.id}" title="Düzenle">✏️</button>
+            <button aria-label="Sil ${c.ad}" class="delete-btn delete" data-id="${c.id}" title="Sil">🗑️</button>
+          </td>
+        `;
+        customerTableBody.appendChild(tr);
+      });
+
+      // Buton eventleri
+      document.querySelectorAll(".edit-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const id = Number(e.currentTarget.dataset.id);
+          const customer = customers.find((c) => c.id === id);
+          if (customer) openModal(customer);
+        });
+      });
+
+      document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = Number(e.currentTarget.dataset.id);
+          if (confirm("Müşteri silinsin mi?")) {
+            try {
+              await deleteCustomer(id);
+              await loadCustomers();
+            } catch (err) {
+              alert("Silme işlemi başarısız: " + err.message);
+            }
+          }
+        });
+      });
+
+      updateChart();
+    }
+
+    // Grafik Güncelle
+    function updateChart() {
+      if (debtChart) debtChart.destroy();
+
+      const labels = filteredCustomers.map((c) => c.ad).slice(0, 10);
+      const borcData = filteredCustomers.map((c) => c.borc || 0).slice(0, 10);
+      const gelirData = filteredCustomers.map((c) => c.gelir || 0).slice(0, 10);
+
+      debtChart = new Chart(debtChartCtx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Borç",
+              data: borcData,
+              backgroundColor: "rgba(244, 124, 94, 0.85)",
+              borderRadius: 8,
+              borderSkipped: false,
+            },
+            {
+              label: "Gelir",
+              data: gelirData,
+              backgroundColor: "rgba(94, 94, 235, 0.75)",
+              borderRadius: 8,
+              borderSkipped: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: "top" } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (val) =>
+                  val.toLocaleString("tr-TR", {
+                    style: "currency",
+                    currency: "TRY",
+                  }),
+              },
+              grid: { color: "rgba(0,0,0,0.05)", borderColor: "transparent" },
+            },
+            x: {
+              grid: { display: false },
+            },
+          },
+        },
+      });
+    }
+
+    // Arama ve filtre
+    function filterCustomers() {
+      const searchText = searchInput.value.trim().toLowerCase();
+      const riskValue = riskFilter.value;
+
+      filteredCustomers = customers.filter((c) => {
+        const matchSearch =
+          c.ad.toLowerCase().includes(searchText) ||
+          (c.tcno && c.tcno.includes(searchText));
+        const matchRisk = riskValue === "all" || c.risk === riskValue;
+        return matchSearch && matchRisk;
+      });
+
+      updateDashboard();
+    }
+
+    // Modal aç/kapat
+    function openModal(customer = null) {
+      if (customer) {
+        document.getElementById("modalTitle").textContent = "Müşteri Düzenle";
+        customerIdInput.value = customer.id;
+        adInput.value = customer.ad;
+        tcnoInput.value = customer.tcno || "";
+        telefonInput.value = customer.telefon || "";
+        gelirInput.value = customer.gelir || 0;
+        giderInput.value = customer.gider || 0;
+        borcInput.value = customer.borc || 0;
+        odemeTarihiInput.value = customer.odeme_tarihi || "";
+      } else {
+        document.getElementById("modalTitle").textContent = "Yeni Müşteri Ekle";
+        customerForm.reset();
+        customerIdInput.value = "";
+      }
+      formError.style.display = "none";
+      modalOverlay.style.display = "flex";
+      setTimeout(() => adInput.focus(), 150);
+    }
+
+    function closeModal() {
+      modalOverlay.style.display = "none";
+    }
+
+    // Form validasyon
+    function validateForm() {
+      if (!adInput.value.trim() || adInput.value.trim().length < 2)
+        return "Ad Soyad en az 2 karakter olmalı.";
+      if (!/^\d{11}$/.test(tcnoInput.value.trim()))
+        return "TC Kimlik No 11 rakamdan oluşmalı.";
+      if (
+        gelirInput.value === "" ||
+        giderInput.value === "" ||
+        borcInput.value === ""
+      )
+        return "Gelir, Gider ve Borç alanları dolu olmalı.";
+      if (isNaN(Number(gelirInput.value)) || Number(gelirInput.value) < 0)
+        return "Gelir geçerli sayı olmalı.";
+      if (isNaN(Number(giderInput.value)) || Number(giderInput.value) < 0)
+        return "Gider geçerli sayı olmalı.";
+      if (isNaN(Number(borcInput.value)) || Number(borcInput.value) < 0)
+        return "Borç geçerli sayı olmalı.";
+      if (!odemeTarihiInput.value) return "Ödeme tarihini giriniz.";
+      return null;
+    }
+
+    // Backend CRUD
+    async function loadCustomers() {
+      try {
+        const res = await fetch("/api/customers");
+        if (!res.ok) throw new Error("Müşteri verisi yüklenemedi.");
+        customers = await res.json();
+        filterCustomers();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function addCustomer(data) {
+      const res = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Müşteri eklenemedi.");
+      }
+      return await res.json();
+    }
+
+    async function updateCustomer(id, data) {
+      const res = await fetch(`/api/customers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Güncelleme başarısız.");
+      }
+      return await res.json();
+    }
+
+    async function deleteCustomer(id) {
+      const res = await fetch(`/api/customers/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Silme işlemi başarısız.");
+      }
+      return await res.json();
+    }
+
+    // Form submit
+    customerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errMsg = validateForm();
+      if (errMsg) {
+        formError.textContent = errMsg;
+        formError.style.display = "block";
+        return;
+      }
+      formError.style.display = "none";
+
+      const data = {
+        ad: adInput.value.trim(),
+        tcno: tcnoInput.value.trim(),
+        telefon: telefonInput.value.trim(),
+        gelir: Number(gelirInput.value),
+        gider: Number(giderInput.value),
+        borc: Number(borcInput.value),
+        odeme_tarihi: odemeTarihiInput.value,
+      };
+
+      const id = customerIdInput.value;
+      try {
+        if (id) {
+          await updateCustomer(Number(id), data);
+          alert("Müşteri başarıyla güncellendi");
+        } else {
+          await addCustomer(data);
+          alert("Müşteri başarıyla eklendi");
+        }
+        closeModal();
+        await loadCustomers();
+      } catch (error) {
+        formError.textContent = error.message;
+        formError.style.display = "block";
+      }
+    });
+
+    // Modal aç/kapat
+    btnAddCustomer.addEventListener("click", () => openModal());
+    modalCloseBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // Arama ve filtre eventleri
+    searchInput.addEventListener("input", filterCustomers);
+    riskFilter.addEventListener("change", filterCustomers);
+
+    // Sayfa yüklenince veri çek
+    window.addEventListener("DOMContentLoaded", loadCustomers);
+  </script>
+</body>
+
+</html>
