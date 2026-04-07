@@ -117,7 +117,7 @@ class RiskMotoru:
                 f"({musteri.gecikme} gün > {GECİKME_ORTA_EŞİK} gün)"
             )
 
-        # --- Tahsilat oranı kontrolü ---
+        # --- Tahsilat oranı kontrolü -----
         if musteri.tahsilat < TAHSİLAT_EŞİĞİ:
             skor -= 20
             aciklama.append(
